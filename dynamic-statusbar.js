@@ -1,58 +1,72 @@
 (function() {
-    function rgbToHex(color) {
-        if (!color || color === 'transparent') return null;
-        if (color.startsWith('#')) return color;
-        
-        const rgb = color.match(/\d+/g);
-        if (!rgb || rgb.length < 3) return null;
-        
-        // 忽略完全透明的颜色
-        if (rgb.length === 4 && parseInt(rgb[3]) === 0) return null;
+    // --- 调试面板 ---
+    const debugEl = document.createElement('div');
+    debugEl.style.cssText = 'position:fixed; top:50px; right:10px; z-index:999999; background:rgba(0,0,0,0.8); color:#0f0; padding:5px; font-size:10px; pointer-events:none; max-width:150px; word-break:break-all;';
+    debugEl.innerHTML = 'Status: Init...';
+    // 如需关闭调试面板，注释下行
+    document.documentElement.appendChild(debugEl);
 
-        return '#' + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+    function log(msg) {
+        debugEl.innerHTML = msg;
     }
 
-    /**
-     * 获取指定元素在视觉上的最终背景色
-     * 如果当前元素透明，则向上查找父元素
-     */
-    function getVisualBackgroundColor(element) {
-        let current = element;
-        while (current) {
-            const style = window.getComputedStyle(current);
-            const bgColor = style.backgroundColor;
-            
-            // 检查是否有背景图或渐变 (作为辅助判断，虽然 theme-color 只能设纯色)
-            const bgImage = style.backgroundImage;
-            if (bgImage && bgImage !== 'none') {
-                console.log('Detected background-image on:', current);
-                // 如果有背景图但背景色透明，这通常比较棘手。
-                // 此时通常应该信任该元素的 backgroundColor (如果非透明) 或者继续向上找
-            }
-
-            // 转换为 Hex 并验证是否有效
-            const hex = rgbToHex(bgColor);
-            if (hex) {
-                return hex;
-            }
-            current = current.parentElement;
+    // --- 颜色工具 ---
+    const ColorUtils = {
+        rgbToHex: function(color) {
+            if (!color || color === 'transparent' || color === 'rgba(0, 0, 0, 0)') return null;
+            if (color.startsWith('#')) return color;
+            const rgb = color.match(/\d+/g);
+            if (!rgb || rgb.length < 3) return null;
+            if (rgb.length === 4 && parseInt(rgb[3]) === 0) return null; // 完全透明
+            return '#' + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+        },
+        extractGradient: function(str) {
+            if (!str || str === 'none' || !str.includes('gradient')) return null;
+            // 简单粗暴：提取第一个 hex 或 rgb
+            const match = str.match(/(#[0-9a-fA-F]{3,8}|rgba?\([\d\s,.]+\))/);
+            return match ? (this.rgbToHex(match[0]) || match[0]) : null;
         }
-        return '#ffffff'; // 最终回退
-    }
+    };
 
     function detectColor() {
-        // 采样点策略：
-        // 取顶部状态栏下方一点的位置 (x: 50%, y: 10px)
-        // 这样能避开完全透明的固定定位 Header，直接取到页面内容的主色
-        // 或者如果 Header 有色，也能取到 Header 颜色
         const x = window.innerWidth / 2;
-        const y = 5; // 顶部边缘，最接近状态栏的地方
+        const y = 10; // 避开边缘
         
-        const topElement = document.elementFromPoint(x, y);
+        // 关键：获取该点下的所有层叠元素 (从上到下)
+        const elements = document.elementsFromPoint(x, y);
         
-        if (!topElement) return '#ffffff';
+        let finalColor = null;
+        let foundSource = 'Default';
+
+        for (let el of elements) {
+            const style = window.getComputedStyle(el);
+            
+            // 1. 检查渐变/背景图
+            const bgImage = style.backgroundImage;
+            const gradientColor = ColorUtils.extractGradient(bgImage);
+            if (gradientColor) {
+                finalColor = gradientColor;
+                foundSource = el.tagName + '.' + el.className + ' (Gradient)';
+                break;
+            }
+
+            // 2. 检查背景色
+            const bgColor = style.backgroundColor;
+            const hex = ColorUtils.rgbToHex(bgColor);
+            if (hex) {
+                finalColor = hex;
+                foundSource = el.tagName + '.' + el.className + ' (BgColor)';
+                break;
+            }
+        }
         
-        return getVisualBackgroundColor(topElement);
+        // 如果没找到，默认白色
+        finalColor = finalColor || '#ffffff';
+
+        // 更新调试面板
+        log(`Color: ${finalColor}<br>Source: ${foundSource}<br>Layers: ${elements.length}`);
+        
+        return finalColor;
     }
 
     function setMetaThemeColor(color) {
@@ -64,43 +78,30 @@
         }
         if (meta.content !== color) {
             meta.content = color;
-            // console.log('Dynamic Status Bar: Color set to', color);
         }
     }
 
     function update() {
         requestAnimationFrame(() => {
-            const color = detectColor();
-            setMetaThemeColor(color);
+            try {
+                const color = detectColor();
+                setMetaThemeColor(color);
+            } catch (e) {
+                log('Error: ' + e.message);
+            }
         });
     }
 
-    // 初始化
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', update);
     } else {
         update();
     }
 
-    // 深度监听：不仅监听 DOM 变化，也监听滚动
-    // 因为滚动可能会让不同颜色的区块进入顶部状态栏区域
+    // 监听
     const observer = new MutationObserver(update);
-    observer.observe(document.documentElement, { 
-        subtree: true, 
-        attributes: true, 
-        attributeFilter: ['style', 'class'] 
-    });
+    observer.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+    window.addEventListener('scroll', update);
     
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                update();
-                ticking = false;
-            });
-            ticking = true;
-        }
-    });
-
-    console.log('Dynamic status bar (Visual Mode) initialized.');
+    console.log('Dynamic Status Bar V4 (X-Ray) Loaded');
 })();
