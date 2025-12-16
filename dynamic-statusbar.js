@@ -1,44 +1,58 @@
 (function() {
-    /**
-     * 将 RGB/RGBA 转换为 Hex 格式，忽略透明度以适配 theme-color
-     */
     function rgbToHex(color) {
-        if (!color) return null;
+        if (!color || color === 'transparent') return null;
         if (color.startsWith('#')) return color;
         
         const rgb = color.match(/\d+/g);
         if (!rgb || rgb.length < 3) return null;
         
+        // 忽略完全透明的颜色
+        if (rgb.length === 4 && parseInt(rgb[3]) === 0) return null;
+
         return '#' + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
     }
 
     /**
-     * 获取当前视图的主要背景色
+     * 获取指定元素在视觉上的最终背景色
+     * 如果当前元素透明，则向上查找父元素
      */
-    function getEffectiveBackgroundColor() {
-        let element = document.body;
-        let bg = window.getComputedStyle(element).backgroundColor;
-        
-        // 如果 body 透明，向下一级查找第一个非透明的大容器
-        if (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
-            const children = document.body.children;
-            for (let i = 0; i < children.length; i++) {
-                const el = children[i];
-                // 忽略脚本和隐藏元素
-                if (el.tagName === 'SCRIPT' || el.style.display === 'none') continue;
-                
-                const childBg = window.getComputedStyle(el).backgroundColor;
-                if (childBg !== 'rgba(0, 0, 0, 0)' && childBg !== 'transparent') {
-                    // 只有当元素占据一定面积时才采纳
-                    const rect = el.getBoundingClientRect();
-                    if (rect.width > window.innerWidth * 0.8 && rect.height > 100) {
-                        bg = childBg;
-                        break;
-                    }
-                }
+    function getVisualBackgroundColor(element) {
+        let current = element;
+        while (current) {
+            const style = window.getComputedStyle(current);
+            const bgColor = style.backgroundColor;
+            
+            // 检查是否有背景图或渐变 (作为辅助判断，虽然 theme-color 只能设纯色)
+            const bgImage = style.backgroundImage;
+            if (bgImage && bgImage !== 'none') {
+                console.log('Detected background-image on:', current);
+                // 如果有背景图但背景色透明，这通常比较棘手。
+                // 此时通常应该信任该元素的 backgroundColor (如果非透明) 或者继续向上找
             }
+
+            // 转换为 Hex 并验证是否有效
+            const hex = rgbToHex(bgColor);
+            if (hex) {
+                return hex;
+            }
+            current = current.parentElement;
         }
-        return rgbToHex(bg) || '#ffffff'; // 默认回退到白色
+        return '#ffffff'; // 最终回退
+    }
+
+    function detectColor() {
+        // 采样点策略：
+        // 取顶部状态栏下方一点的位置 (x: 50%, y: 10px)
+        // 这样能避开完全透明的固定定位 Header，直接取到页面内容的主色
+        // 或者如果 Header 有色，也能取到 Header 颜色
+        const x = window.innerWidth / 2;
+        const y = 5; // 顶部边缘，最接近状态栏的地方
+        
+        const topElement = document.elementFromPoint(x, y);
+        
+        if (!topElement) return '#ffffff';
+        
+        return getVisualBackgroundColor(topElement);
     }
 
     function setMetaThemeColor(color) {
@@ -50,13 +64,13 @@
         }
         if (meta.content !== color) {
             meta.content = color;
-            console.log('Status bar color updated to:', color);
+            // console.log('Dynamic Status Bar: Color set to', color);
         }
     }
 
     function update() {
         requestAnimationFrame(() => {
-            const color = getEffectiveBackgroundColor();
+            const color = detectColor();
             setMetaThemeColor(color);
         });
     }
@@ -68,15 +82,15 @@
         update();
     }
 
-    // 监听 Body 样式变化
+    // 深度监听：不仅监听 DOM 变化，也监听滚动
+    // 因为滚动可能会让不同颜色的区块进入顶部状态栏区域
     const observer = new MutationObserver(update);
-    observer.observe(document.body, { 
+    observer.observe(document.documentElement, { 
+        subtree: true, 
         attributes: true, 
-        attributeFilter: ['style', 'class'],
-        childList: true // 监听子元素变化以应对动态加载
+        attributeFilter: ['style', 'class'] 
     });
     
-    // 监听滚动（处理渐变背景或多色块页面）
     let ticking = false;
     window.addEventListener('scroll', () => {
         if (!ticking) {
@@ -88,5 +102,5 @@
         }
     });
 
-    console.log('Dynamic status bar initialized.');
+    console.log('Dynamic status bar (Visual Mode) initialized.');
 })();
