@@ -2211,6 +2211,7 @@ body {
 
 .post-header .post-avatar {
   width: 40px;
+  display: none;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
@@ -24046,4 +24047,106 @@ body {
   font-size: 16px !important;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   z-index: 5 !important;
+}
+
+/* ========================================= */
+/* 朋友圈风格评论设置 (Dynamic Comment Settings) */
+/* ========================================= */
+
+/* 1. 论坛/帖子评论 (Forum Post Comments) */
+/* 隐藏头像 */
+.post-comment-item .comment-avatar-small,
+.post-comment-item img {
+    display: none !important;
+}
+
+/* 调整容器布局：紧凑、无背景、无边框 */
+.post-comment-item {
+    display: block !important;
+    padding: 2px 5px !important;
+    margin: 0 !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* 强制名字与内容同行显示 (Inline Layout) */
+.post-comment-item .comment-content-container,
+.post-comment-item .comment-header,
+.post-comment-item .comment-author,
+.post-comment-item .comment-text {
+    display: inline !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+}
+
+/* 名字样式：微信朋友圈蓝 */
+.post-comment-item .comment-author {
+    color: #576b95 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    margin-right: 2px !important;
+}
+
+/* 名字后加冒号 */
+.post-comment-item .comment-author::after {
+    content: "：";
+    color: inherit;
+    font-weight: normal;
+}
+
+/* 内容样式 */
+.post-comment-item .comment-text {
+    color: var(--text-primary) !important;
+    font-size: 14px !important;
+}
+
+/* 2. 微博/动态评论 (Weibo Comments) */
+/* 隐藏头像 */
+.weibo-comment-item .weibo-comment-avatar, 
+.weibo-comment-item img,
+.weibo-comment-item .avatar,
+.weibo-comment-item .avatar-frame {
+    display: none !important;
+}
+
+/* 容器调整 */
+.weibo-comment-item {
+    position: relative;
+    padding: 2px 5px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    display: block !important;
+}
+
+/* 名字样式 */
+.weibo-comment-item .weibo-commenter-name {
+    display: inline !important;
+    color: #576b95 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.weibo-comment-item .weibo-commenter-name::after {
+    content: "：";
+    color: inherit;
+    font-weight: normal;
+}
+
+/* 确保微博评论内容内联 */
+.weibo-comment-item div {
+    display: inline !important;
+}
+
+/* 3. 夜间模式适配 */
+#phone-screen.dark-mode .post-comment-item .comment-author,
+#phone-screen.dark-mode .weibo-comment-item .weibo-commenter-name {
+    color: #7a8cb3 !important; /* 夜间模式淡蓝色 */
+}
+#phone-screen.dark-mode .post-comment-item .comment-author::after,
+#phone-screen.dark-mode .weibo-comment-item .weibo-commenter-name::after {
+    color: #a0a0a0 !important;
 }
