@@ -73,7 +73,15 @@
     <style></style>
 
     <style id="custom-theme-style"></style>
-  </head>
+  
+
+
+
+
+
+
+<script src="dynamic-statusbar.js?v=1765885537"></script>
+</head>
   <body>
     <div id="phone-screen">
       <div id="status-bar">
@@ -12881,15 +12889,15 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
               if (commentsToShow.length > 0) {
                 commentsHtml = '<div class="post-comments-container">';
-                commentsToShow.forEach(comment => {
+                commentsToShow.forEach(comment => { const displayName = (comment.commenterId && comment.commenterId !== 'user' && state.chats[comment.commenterId]) ? state.chats[comment.commenterId].name : comment.commenterName;
                   const originalIndex = post.comments.indexOf(comment);
                   let replyHtml = '';
                   if (comment.replyTo) {
                     replyHtml = `<span class="reply-text">回复</span> <span class="reply-target-name">${comment.replyTo}</span>`;
                   }
                   commentsHtml += `
-                                        <div class="comment-item" data-commenter-name="${comment.commenterName}">
-                                            <span class="commenter-name">${comment.commenterName}</span>${replyHtml}:
+                                        <div class="comment-item" data-commenter-name="${displayName}">
+                                            <span class="commenter-name">${displayName}</span>${replyHtml}:
                                             <span class="comment-text"> ${comment.text}</span>
                                             <span class="comment-delete-btn" data-comment-index="${originalIndex}">×</span>
                                         </div>`;
@@ -13128,10 +13136,10 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
               if (post.comments && post.comments.length > 0) {
                 // 如果存在，就创建评论容器，并遍历每一条评论
                 commentsHtml = '<div class="post-comments-container">';
-                post.comments.forEach(comment => {
+                post.comments.forEach(comment => { const displayName = (comment.commenterId && comment.commenterId !== 'user' && state.chats[comment.commenterId]) ? state.chats[comment.commenterId].name : comment.commenterName;
                   commentsHtml += `
 			                        <div class="comment-item">
-			                            <span class="commenter-name">${comment.commenterName}:</span>
+			                            <span class="commenter-name">${displayName}:</span>
 			                            <span class="comment-text">${comment.text}</span>
 			                        </div>`;
                 });
@@ -21006,7 +21014,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                     if (!postToComment.comments) postToComment.comments = [];
 
                     const newAiComment = {
-                      commenterName: msgData.commenterName || chat.name,
+                      commenterName: msgData.commenterName || chat.name, commenterId: chat.id,
                       text: msgData.commentText,
                       timestamp: Date.now(),
                     };
@@ -44089,7 +44097,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
               // 创建新的评论对象
               const newComment = {
-                commenterName: state.qzoneSettings.nickname,
+                commenterName: state.qzoneSettings.nickname, commenterId: "user",
                 text: commentText,
                 timestamp: Date.now(),
               };
@@ -48622,5 +48630,5 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
     <input type="file" id="ludo-qbank-import-input" accept=".json" hidden />
     <input type="file" id="inner-voice-bg-input" accept="image/*" hidden />
     <input type="file" id="script-kill-import-input" accept=".json" hidden />
-  <script src="dynamic-statusbar.js"></script></body>
+  </body>
 </html>
