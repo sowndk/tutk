@@ -723,6 +723,7 @@ body {
   width: 100%;
 }
 #chat-input {
+    overflow-y: auto;
   flex-grow: 1;
   border: none;
   padding: 10px 15px;
