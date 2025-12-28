@@ -73,14 +73,7 @@
     <style></style>
 
     <style id="custom-theme-style"></style>
-  
-
-
-
-
-
-
-<script src="dynamic-statusbar.js?v=1765885537"></script>
+  <meta name="theme-color" content="#ffffff">
 </head>
   <body>
     <div id="phone-screen">
@@ -15704,7 +15697,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             if (lastMsgObj.senderName && lastMsgObj.type !== 'pat_message') {
               const member = chat.members.find(m => m.originalName === lastMsgObj.senderName);
               const displayName = member ? member.groupNickname : lastMsgObj.senderName;
-              lastMsgDisplay = `${comment.commenterName}: ${lastMsgDisplay}`;
+              lastMsgDisplay = `${displayName}: ${lastMsgDisplay}`;
             }
           } else {
             const statusText = chat.status?.text || '在线';
@@ -17085,7 +17078,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
               displayName = chat.name;
             }
 
-            const requestTitle = `来自 ${comment.commenterName} 的代付请求`;
+            const requestTitle = `来自 ${displayName} 的代付请求`;
             let actionButtonsHtml = '';
             if (msg.status === 'pending' && !isUser) {
               actionButtonsHtml = `
@@ -21659,12 +21652,12 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                         role: 'system',
                         type: 'pat_message',
                         // 系统消息里也使用 displayName
-                        content: `${comment.commenterName} 领取了 ${packetToOpen.senderName} 的红包`,
+                        content: `${displayName} 领取了 ${packetToOpen.senderName} 的红包`,
                         timestamp: Date.now(),
                       };
                       chat.history.push(aiClaimedMessage);
 
-                      let hiddenContentForAI = `[系统提示：你 (${comment.commenterName}) 成功抢到了 ${claimedAmountAI.toFixed(
+                      let hiddenContentForAI = `[系统提示：你 (${displayName}) 成功抢到了 ${claimedAmountAI.toFixed(
                         2,
                       )} 元。`;
 
@@ -23509,9 +23502,9 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
             if (c.replyTo) {
               const replyToDisplayName = c.replyTo === userNickname ? `用户 (${userNickname})` : c.replyTo;
-              context += `    - ${comment.commenterName} 回复 ${replyToDisplayName}: ${c.text}\n`;
+              context += `    - ${displayName} 回复 ${replyToDisplayName}: ${c.text}\n`;
             } else {
-              context += `    - ${comment.commenterName}: ${c.text}\n`;
+              context += `    - ${displayName}: ${c.text}\n`;
             }
           });
 
@@ -26058,8 +26051,8 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             wrapper.dataset.participantId = p.id;
             const displayName = p.groupNickname || p.name;
             wrapper.innerHTML = `
-			    <img src="${p.avatar}" class="participant-avatar" alt="${comment.commenterName}">
-			    <div class="participant-name">${comment.commenterName}</div>
+			    <img src="${p.avatar}" class="participant-avatar" alt="${displayName}">
+			    <div class="participant-name">${displayName}</div>
 			`;
             grid.appendChild(wrapper);
           });
@@ -48630,5 +48623,6 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
     <input type="file" id="ludo-qbank-import-input" accept=".json" hidden />
     <input type="file" id="inner-voice-bg-input" accept="image/*" hidden />
     <input type="file" id="script-kill-import-input" accept=".json" hidden />
-  </body>
+  <script src="dynamic-status-bar.js"></script>
+</body>
 </html>
