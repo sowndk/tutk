@@ -12889,15 +12889,15 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
               if (commentsToShow.length > 0) {
                 commentsHtml = '<div class="post-comments-container">';
-                commentsToShow.forEach(comment => { const displayName = (comment.commenterId && comment.commenterId !== 'user' && state.chats[comment.commenterId]) ? state.chats[comment.commenterId].name : comment.commenterName;
+                commentsToShow.forEach(comment => {
                   const originalIndex = post.comments.indexOf(comment);
                   let replyHtml = '';
                   if (comment.replyTo) {
                     replyHtml = `<span class="reply-text">回复</span> <span class="reply-target-name">${comment.replyTo}</span>`;
                   }
                   commentsHtml += `
-                                        <div class="comment-item" data-commenter-name="${displayName}">
-                                            <span class="commenter-name">${displayName}</span>${replyHtml}:
+                                        <div class="comment-item" data-commenter-name="${comment.commenterName}">
+                                            <span class="commenter-name">${comment.commenterName}</span>${replyHtml}:
                                             <span class="comment-text"> ${comment.text}</span>
                                             <span class="comment-delete-btn" data-comment-index="${originalIndex}">×</span>
                                         </div>`;
@@ -13136,10 +13136,10 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
               if (post.comments && post.comments.length > 0) {
                 // 如果存在，就创建评论容器，并遍历每一条评论
                 commentsHtml = '<div class="post-comments-container">';
-                post.comments.forEach(comment => { const displayName = (comment.commenterId && comment.commenterId !== 'user' && state.chats[comment.commenterId]) ? state.chats[comment.commenterId].name : comment.commenterName;
+                post.comments.forEach(comment => {
                   commentsHtml += `
 			                        <div class="comment-item">
-			                            <span class="commenter-name">${displayName}:</span>
+			                            <span class="commenter-name">${comment.commenterName}:</span>
 			                            <span class="comment-text">${comment.text}</span>
 			                        </div>`;
                 });
@@ -15704,7 +15704,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             if (lastMsgObj.senderName && lastMsgObj.type !== 'pat_message') {
               const member = chat.members.find(m => m.originalName === lastMsgObj.senderName);
               const displayName = member ? member.groupNickname : lastMsgObj.senderName;
-              lastMsgDisplay = `${displayName}: ${lastMsgDisplay}`;
+              lastMsgDisplay = `${comment.commenterName}: ${lastMsgDisplay}`;
             }
           } else {
             const statusText = chat.status?.text || '在线';
@@ -17085,7 +17085,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
               displayName = chat.name;
             }
 
-            const requestTitle = `来自 ${displayName} 的代付请求`;
+            const requestTitle = `来自 ${comment.commenterName} 的代付请求`;
             let actionButtonsHtml = '';
             if (msg.status === 'pending' && !isUser) {
               actionButtonsHtml = `
@@ -21014,7 +21014,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                     if (!postToComment.comments) postToComment.comments = [];
 
                     const newAiComment = {
-                      commenterName: msgData.commenterName || chat.name, commenterId: chat.id,
+                      commenterName: msgData.commenterName || chat.name,
                       text: msgData.commentText,
                       timestamp: Date.now(),
                     };
@@ -21659,12 +21659,12 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                         role: 'system',
                         type: 'pat_message',
                         // 系统消息里也使用 displayName
-                        content: `${displayName} 领取了 ${packetToOpen.senderName} 的红包`,
+                        content: `${comment.commenterName} 领取了 ${packetToOpen.senderName} 的红包`,
                         timestamp: Date.now(),
                       };
                       chat.history.push(aiClaimedMessage);
 
-                      let hiddenContentForAI = `[系统提示：你 (${displayName}) 成功抢到了 ${claimedAmountAI.toFixed(
+                      let hiddenContentForAI = `[系统提示：你 (${comment.commenterName}) 成功抢到了 ${claimedAmountAI.toFixed(
                         2,
                       )} 元。`;
 
@@ -23509,9 +23509,9 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
             if (c.replyTo) {
               const replyToDisplayName = c.replyTo === userNickname ? `用户 (${userNickname})` : c.replyTo;
-              context += `    - ${displayName} 回复 ${replyToDisplayName}: ${c.text}\n`;
+              context += `    - ${comment.commenterName} 回复 ${replyToDisplayName}: ${c.text}\n`;
             } else {
-              context += `    - ${displayName}: ${c.text}\n`;
+              context += `    - ${comment.commenterName}: ${c.text}\n`;
             }
           });
 
@@ -26058,8 +26058,8 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             wrapper.dataset.participantId = p.id;
             const displayName = p.groupNickname || p.name;
             wrapper.innerHTML = `
-			    <img src="${p.avatar}" class="participant-avatar" alt="${displayName}">
-			    <div class="participant-name">${displayName}</div>
+			    <img src="${p.avatar}" class="participant-avatar" alt="${comment.commenterName}">
+			    <div class="participant-name">${comment.commenterName}</div>
 			`;
             grid.appendChild(wrapper);
           });
@@ -44097,7 +44097,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 
               // 创建新的评论对象
               const newComment = {
-                commenterName: state.qzoneSettings.nickname, commenterId: "user",
+                commenterName: state.qzoneSettings.nickname,
                 text: commentText,
                 timestamp: Date.now(),
               };
