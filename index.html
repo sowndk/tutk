@@ -49,7 +49,7 @@
 
     <title>EPhone（兔k机版）</title>
 
-    <link rel="stylesheet" href="style.css?v=1767026380" />
+    <link rel="stylesheet" href="style.css?v=1767026952" />
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
@@ -36950,6 +36950,41 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             ? 'block' 
             : 'none';
           document.getElementById('select-all-user-stickers-btn').textContent = '全选'; // 重置文案
+          // --- [Patch: Reset Select All Button Logic] ---
+          const oldBtn = document.getElementById('select-all-user-stickers-btn');
+          if (oldBtn) {
+              const newBtn = oldBtn.cloneNode(true);
+              oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+              
+              newBtn.addEventListener('click', () => {
+                 const items = document.querySelectorAll('#sticker-grid .sticker-item');
+                 let isAllSelected = true;
+                 
+                 // Check status
+                 for (let item of items) {
+                     const img = item.querySelector('.sticker-image');
+                     if (img && !img.classList.contains('selected')) {
+                         isAllSelected = false;
+                         break;
+                     }
+                 }
+                 
+                 // Perform Click
+                 items.forEach(item => {
+                     const img = item.querySelector('.sticker-image');
+                     if (isAllSelected) {
+                         if (img && img.classList.contains('selected')) item.click();
+                     } else {
+                         if (img && !img.classList.contains('selected')) item.click();
+                     }
+                 });
+                 
+                 // Update Text
+                 newBtn.textContent = isAllSelected ? '全选' : '取消全选'; // Toggle logic inverse
+              });
+          }
+          // --- [Patch End] ---
+
           
           document.getElementById('sticker-panel-footer').style.display = isUserStickerSelectionMode ? 'flex' : 'none';
 
