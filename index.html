@@ -49,7 +49,7 @@
 
     <title>EPhone（兔k机版）</title>
 
-    <link rel="stylesheet" href="style.css?v=1767027582" />
+    <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
@@ -1788,17 +1788,10 @@
             <!-- “编辑”和“完成”按钮 -->
             <div style="display: flex; gap: 10px">
               <span class="panel-btn" id="edit-user-stickers-btn">编辑</span>
-              <span class="panel-btn" id="select-all-user-stickers-btn" style="display: none">全选</span>
               <span class="panel-btn" id="done-user-stickers-btn" style="display: none">完成</span>
               <span class="panel-btn" id="add-sticker-btn">添加</span>
               <span class="panel-btn" id="upload-sticker-btn">上传</span>
             </div>
-          </div>
-          
-          <div id="sticker-search-container" style="padding: 0 12px 10px 12px;">
-            <input type="text" id="sticker-search-input" placeholder="🔍 搜索表情..." 
-                   oninput="renderStickerPanel()"
-                   style="width: 100%; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;">
           </div>
           <div id="sticker-grid"></div>
 
@@ -16274,7 +16267,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           showScreen('world-book-editor-screen');
         }
 
-        function renderStickerPanel() { window.renderStickerPanel = renderStickerPanel;
+        function renderStickerPanel() {
           const grid = document.getElementById('sticker-grid');
           grid.innerHTML = '';
 
@@ -16288,20 +16281,6 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             stickersToRender = state.userStickers.filter(sticker => sticker.categoryId === activeStickerCategoryId);
           }
 
-          
-          // --- [Patch Start] 表情包搜索过滤 ---
-          const searchInput = document.getElementById('sticker-search-input');
-          if (searchInput && searchInput.value.trim()) {
-            const keyword = searchInput.value.toLowerCase().trim();
-            stickersToRender = stickersToRender.filter(s => {
-              // 匹配 name (如果有) 或者 url
-              return (s.name && s.name.toLowerCase().includes(keyword)) || 
-                     (s.url && s.url.toLowerCase().includes(keyword)) ||
-                     (s.remark && s.remark.toLowerCase().includes(keyword)); 
-            });
-          }
-          // --- [Patch End] ---
-          
           if (stickersToRender.length === 0) {
             // 根据当前选中的分类，显示不同的提示语
             let message;
@@ -16322,7 +16301,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             stickersToRender.forEach(sticker => {
               // 这部分是你原来的渲染逻辑，保持不变
               const itemContainer = document.createElement('div');
-              itemContainer.className = 'sticker-item'; itemContainer.dataset.id = sticker.id;
+              itemContainer.className = 'sticker-item';
 
               const imageEl = document.createElement('div');
               imageEl.className = 'sticker-image';
@@ -36946,46 +36925,6 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           document.getElementById('done-user-stickers-btn').style.display = isUserStickerSelectionMode
             ? 'block'
             : 'none';
-          document.getElementById('select-all-user-stickers-btn').style.display = isUserStickerSelectionMode 
-            ? 'block' 
-            : 'none';
-          document.getElementById('select-all-user-stickers-btn').textContent = '全选'; // 重置文案
-          // --- [Patch: Reset Select All Button Logic] ---
-          const oldBtn = document.getElementById('select-all-user-stickers-btn');
-          if (oldBtn) {
-              const newBtn = oldBtn.cloneNode(true);
-              oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-              
-              newBtn.addEventListener('click', () => {
-                 const items = document.querySelectorAll('#sticker-grid .sticker-item');
-                 let isAllSelected = true;
-                 
-                 // Check status
-                 for (let item of items) {
-                     const img = item.querySelector('.sticker-image');
-                     if (img && !img.classList.contains('selected')) {
-                         isAllSelected = false;
-                         break;
-                     }
-                 }
-                 
-                 // Perform Click
-                 items.forEach(item => {
-                     const img = item.querySelector('.sticker-image');
-                     if (isAllSelected) {
-                         if (img && img.classList.contains('selected')) item.click();
-                     } else {
-                         if (img && !img.classList.contains('selected')) item.click();
-                     }
-                 });
-                 
-                 // Update Text
-                 newBtn.textContent = isAllSelected ? '全选' : '取消全选'; // Toggle logic inverse
-              });
-          }
-          // --- [Patch End] ---
-
-          
           document.getElementById('sticker-panel-footer').style.display = isUserStickerSelectionMode ? 'flex' : 'none';
 
           const deleteBtn = document.getElementById('delete-selected-user-stickers-btn');
@@ -43269,19 +43208,6 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           });
 
           const stickerPanel = document.getElementById('sticker-panel');
-          
-          // --- [Patch Start] 修复搜索框事件绑定 ---
-          const stickerSearchInput = document.getElementById('sticker-search-input');
-          if (stickerSearchInput) {
-             // 移除可能无效的内联绑定（可选，这里主要是为了确保 JS 绑定生效）
-             stickerSearchInput.oninput = null; 
-             stickerSearchInput.addEventListener('input', () => {
-                 // 确保 renderStickerPanel 被调用
-                 renderStickerPanel();
-             });
-          }
-          // --- [Patch End] ---
-          
           document.getElementById('open-sticker-panel-btn').addEventListener('click', () => {
             renderStickerPanel();
             stickerPanel.classList.add('visible');
