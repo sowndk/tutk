@@ -24060,3 +24060,17 @@ body {
     pointer-events: none;
     z-index: 1000;
 }
+
+/* Hide scrollbar for chat inputs to keep UI clean */
+#chat-input, 
+#chat-input-area textarea,
+.moe-input::-webkit-scrollbar {
+    display: none;
+}
+
+#chat-input, 
+#chat-input-area textarea,
+.moe-input {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}

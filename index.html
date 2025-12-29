@@ -1793,6 +1793,12 @@
               <span class="panel-btn" id="upload-sticker-btn">上传</span>
             </div>
           </div>
+          
+          <div id="sticker-search-container" style="padding: 0 12px 10px 12px;">
+            <input type="text" id="sticker-search-input" placeholder="🔍 搜索表情..." 
+                   oninput="renderStickerPanel()"
+                   style="width: 100%; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;">
+          </div>
           <div id="sticker-grid"></div>
 
           <!-- 在 #sticker-panel 中，找到 id="sticker-panel-footer" -->
@@ -16281,6 +16287,20 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             stickersToRender = state.userStickers.filter(sticker => sticker.categoryId === activeStickerCategoryId);
           }
 
+          
+          // --- [Patch Start] 表情包搜索过滤 ---
+          const searchInput = document.getElementById('sticker-search-input');
+          if (searchInput && searchInput.value.trim()) {
+            const keyword = searchInput.value.toLowerCase().trim();
+            stickersToRender = stickersToRender.filter(s => {
+              // 匹配 name (如果有) 或者 url
+              return (s.name && s.name.toLowerCase().includes(keyword)) || 
+                     (s.url && s.url.toLowerCase().includes(keyword)) ||
+                     (s.remark && s.remark.toLowerCase().includes(keyword)); 
+            });
+          }
+          // --- [Patch End] ---
+          
           if (stickersToRender.length === 0) {
             // 根据当前选中的分类，显示不同的提示语
             let message;
