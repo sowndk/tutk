@@ -49,7 +49,7 @@
 
     <title>EPhone（兔k机版）</title>
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=1767026080" />
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
@@ -16273,7 +16273,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           showScreen('world-book-editor-screen');
         }
 
-        function renderStickerPanel() {
+        function renderStickerPanel() { window.renderStickerPanel = renderStickerPanel;
           const grid = document.getElementById('sticker-grid');
           grid.innerHTML = '';
 
@@ -43228,6 +43228,19 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           });
 
           const stickerPanel = document.getElementById('sticker-panel');
+          
+          // --- [Patch Start] 修复搜索框事件绑定 ---
+          const stickerSearchInput = document.getElementById('sticker-search-input');
+          if (stickerSearchInput) {
+             // 移除可能无效的内联绑定（可选，这里主要是为了确保 JS 绑定生效）
+             stickerSearchInput.oninput = null; 
+             stickerSearchInput.addEventListener('input', () => {
+                 // 确保 renderStickerPanel 被调用
+                 renderStickerPanel();
+             });
+          }
+          // --- [Patch End] ---
+          
           document.getElementById('open-sticker-panel-btn').addEventListener('click', () => {
             renderStickerPanel();
             stickerPanel.classList.add('visible');

@@ -24074,3 +24074,61 @@ body {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+/* --- [Chrome PWA Scrollbar Fix V2] --- */
+/* 强制隐藏 Chrome/Webkit 内核下的滚动条 */
+
+/* 1. 针对主聊天输入框 ID */
+#chat-input::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* 2. 针对输入区域容器下的 textarea */
+#chat-input-area textarea::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* 3. 针对通用输入框类名 */
+.moe-input::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* 4. [兜底策略] 强制隐藏页面内所有 textarea 的滚动条 */
+/* 如果前面 ID 没匹配上，这条规则会生效 */
+textarea::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* --- [Final Scrollbar Fix] --- */
+/* 禁止调整大小，移除所有可能的滚动条样式 */
+#chat-input, .moe-input, textarea {
+    resize: none !important; /* 禁止右下角拖拽 */
+    overflow-y: auto; /* 允许滚动但隐藏滚动条 */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE/Edge */
+}
+
+/* Webkit 内核强力隐藏 */
+#chat-input::-webkit-scrollbar,
+.moe-input::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+}
+
+/* 隐藏父容器可能产生的滚动条 */
+#chat-input-area::-webkit-scrollbar {
+    display: none !important;
+}
