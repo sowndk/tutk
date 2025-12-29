@@ -49,7 +49,7 @@
 
     <title>EPhone（兔k机版）</title>
 
-    <link rel="stylesheet" href="style.css?v=1767026080" />
+    <link rel="stylesheet" href="style.css?v=1767026380" />
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
@@ -1788,6 +1788,7 @@
             <!-- “编辑”和“完成”按钮 -->
             <div style="display: flex; gap: 10px">
               <span class="panel-btn" id="edit-user-stickers-btn">编辑</span>
+              <span class="panel-btn" id="select-all-user-stickers-btn" style="display: none">全选</span>
               <span class="panel-btn" id="done-user-stickers-btn" style="display: none">完成</span>
               <span class="panel-btn" id="add-sticker-btn">添加</span>
               <span class="panel-btn" id="upload-sticker-btn">上传</span>
@@ -16321,7 +16322,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             stickersToRender.forEach(sticker => {
               // 这部分是你原来的渲染逻辑，保持不变
               const itemContainer = document.createElement('div');
-              itemContainer.className = 'sticker-item';
+              itemContainer.className = 'sticker-item'; itemContainer.dataset.id = sticker.id;
 
               const imageEl = document.createElement('div');
               imageEl.className = 'sticker-image';
@@ -36945,6 +36946,11 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
           document.getElementById('done-user-stickers-btn').style.display = isUserStickerSelectionMode
             ? 'block'
             : 'none';
+          document.getElementById('select-all-user-stickers-btn').style.display = isUserStickerSelectionMode 
+            ? 'block' 
+            : 'none';
+          document.getElementById('select-all-user-stickers-btn').textContent = '全选'; // 重置文案
+          
           document.getElementById('sticker-panel-footer').style.display = isUserStickerSelectionMode ? 'flex' : 'none';
 
           const deleteBtn = document.getElementById('delete-selected-user-stickers-btn');
