@@ -1,8 +1,53 @@
 (function() {
-    // --- 调试 HUD ---
+    // ==========================================
+    // Fix: 视口高度修正 (修复切换应用后的缝隙/白边问题)
+    // ==========================================
+    function fixViewportLayout() {
+        const screen = document.getElementById('phone-screen');
+        if (screen) {
+            // 获取当前的实际可视高度
+            const realHeight = window.innerHeight;
+            
+            // 强制设置容器高度，不再依赖不稳定的 100vh
+            screen.style.height = realHeight + 'px';
+            
+            // 强制重置滚动位置，防止因系统UI挤压导致的偏移
+            window.scrollTo(0, 0);
+        }
+    }
+
+    // 1. 初始化时立即修正
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixViewportLayout);
+    } else {
+        fixViewportLayout();
+    }
+
+    // 2. 监听尺寸变化 (横竖屏、软键盘)
+    window.addEventListener('resize', () => {
+        fixViewportLayout();
+        // 某些浏览器 resize 事件触发频繁，防抖动不是必须但延迟再次确认更稳妥
+        setTimeout(fixViewportLayout, 100);
+    });
+
+    // 3. 监听可见性变化 (核心修复：切换APP回来时触发)
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            fixViewportLayout();
+            // 延迟多次执行，以等待系统UI动画（如状态栏滑出）完全结束
+            setTimeout(fixViewportLayout, 200);
+            setTimeout(fixViewportLayout, 500);
+        }
+    });
+
+    // ==========================================
+    // 原有逻辑：动态状态栏颜色检测
+    // ==========================================
+    
+    // --- 调试 HUD (默认关闭) ---
     const debugEl = document.createElement('div');
-    debugEl.style.cssText = 'position:fixed; top:50px; right:10px; z-index:999999; background:rgba(0,0,0,0.8); color:#0f0; padding:8px; font-size:11px; pointer-events:none; max-width:200px; word-break:break-all; border-radius:4px; font-family:monospace;';
-    debugEl.innerHTML = 'Status: Init...';
+    debugEl.style.cssText = 'position:fixed; top:50px; right:10px; z-index:999999; background:rgba(0,0,0,0.8); color:#0f0; padding:8px; font-size:11px; pointer-events:none; max-width:200px; word-break:break-all; border-radius:4px; font-family:monospace; display:none;'; 
+    // 如需开启调试，将 display:none 改为 display:block 并取消下一行的注释
     // document.documentElement.appendChild(debugEl);
 
     function log(msg) { debugEl.innerHTML = msg; }
@@ -15,7 +60,6 @@
             if (color.startsWith('#')) return color;
             const rgb = color.match(/\d+/g);
             if (!rgb || rgb.length < 3) return null;
-            // 严格检查 alpha 通道：如果 alpha 为 0，视为无效
             if (rgb.length === 4 && parseFloat(rgb[3]) === 0) return null;
             return '#' + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
         },
@@ -31,16 +75,14 @@
         extractImageColor: function(url, callback) {
             const img = new Image();
             img.crossOrigin = "Anonymous";
-            img.src = url.replace(/['"]/g, ''); // 清理 url('...')
+            img.src = url.replace(/['"]/g, ''); 
             
             img.onload = function() {
                 try {
                     const canvas = document.createElement('canvas');
-                    // 只取顶部 10 像素进行分析
                     canvas.width = 1;
                     canvas.height = 1;
                     const ctx = canvas.getContext('2d');
-                    // 绘制图片顶部 (sourceY=0)
                     ctx.drawImage(img, img.width / 2, 0, 1, 1, 0, 0, 1, 1);
                     const p = ctx.getImageData(0, 0, 1, 1).data;
                     const hex = '#' + ((1 << 24) + (p[0] << 16) + (p[1] << 8) + p[2]).toString(16).slice(1);
@@ -59,10 +101,10 @@
     let isProcessingImage = false;
 
     function detectColor() {
-        if (isProcessingImage) return; // 避免重复触发
+        if (isProcessingImage) return; 
 
         const x = window.innerWidth / 2;
-        const y = 1; // 稍微向下一点，避开极其边缘的遮罩
+        const y = 1; // 顶部采样点
         
         const elements = document.elementsFromPoint(x, y);
         
@@ -73,14 +115,10 @@
         for (let el of elements) {
             const style = window.getComputedStyle(el);
 
-            // 1. 过滤透明度极低的幽灵层
-            const opacity = parseFloat(style.opacity);
-            if (opacity < 0.1) continue;
+            if (parseFloat(style.opacity) < 0.1) continue;
 
-            // 2. 优先检查背景图 (URL)
             const bgImage = style.backgroundImage;
             if (bgImage && bgImage !== 'none') {
-                // 情况A: 渐变
                 if (bgImage.includes('gradient')) {
                     const grad = ColorUtils.extractGradient(bgImage);
                     if (grad) {
@@ -89,7 +127,6 @@
                         break;
                     }
                 } 
-                // 情况B: 真实图片 URL
                 else if (bgImage.includes('url')) {
                     const urlMatch = bgImage.match(/url\((.*?)\)/);
                     if (urlMatch && urlMatch[1]) {
@@ -100,22 +137,17 @@
                             if (hex) {
                                 applyColor(hex, `${el.tagName} (Image)`);
                             } else {
-                                // 图片提取失败（可能跨域），回退到继续找背景色
                                 log('Img CORS Fail, finding next layer...');
                             }
                         });
                         foundImage = true;
-                        break; // 暂停主循环，等待图片回调
+                        break; 
                     }
                 }
             }
 
-            // 3. 检查背景色 (如果不是完全透明)
             const bgColor = style.backgroundColor;
             const hex = ColorUtils.rgbToHex(bgColor);
-            // 只有当背景色不透明度足够高时才采纳
-            // 简单的 rgbToHex 已经过滤了 alpha=0，但我们需要过滤半透明
-            // 这里假设 alpha > 0.5 才是有效背景，否则可能是叠加层
             if (hex) {
                 const alpha = bgColor.match(/rgba?\(.*,\s*([\d.]+)\)/);
                 if (!alpha || parseFloat(alpha[1]) > 0.5) {
@@ -135,7 +167,6 @@
         if (color === lastSetColor) return;
         lastSetColor = color;
 
-        // 设置 Meta
         let meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) {
             meta = document.createElement('meta');
@@ -144,15 +175,13 @@
         }
         meta.content = color;
 
-        // 更新 HUD
         log(`Color: ${color}<br>Src: ${source}<br>Time: ${new Date().toLocaleTimeString()}`);
     }
 
-    // 启动
+    // 启动检测循环
     function loop() {
         requestAnimationFrame(() => {
             detectColor();
-            // 降频执行，节省 Canvas 开销
             setTimeout(loop, 1000); 
         });
     }
@@ -163,8 +192,7 @@
         loop();
     }
     
-    // 滚动时立即触发一次
     window.addEventListener('scroll', () => detectColor());
 
-    console.log('Dynamic Status Bar V5 (Image Engine) Loaded');
+    console.log('Dynamic Status Bar V5.1 (With Viewport Fix) Loaded');
 })();
