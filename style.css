@@ -24047,3 +24047,16 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   z-index: 5 !important;
 }
+
+/* PWA Gap Fix: Extend status bar background by 1px to cover rendering artifacts during app switch */
+#status-bar::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: inherit; /* Inherits the dynamic color set by JS */
+    pointer-events: none;
+    z-index: 1000;
+}
