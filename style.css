@@ -24048,6 +24048,8 @@ body {
   z-index: 5 !important;
 }
 
+/*
+
 /* PWA Gap Fix: Extend status bar background by 1px to cover rendering artifacts during app switch */
 #status-bar::after {
     content: "";
