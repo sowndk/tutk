@@ -393,21 +393,24 @@ document.addEventListener('DOMContentLoaded', () => {
       commentsHtml += '<p style="color: var(--text-secondary); font-size: 14px;">还没有评论，快来抢沙发！</p>';
     }
     commentsHtml += '</div>';
-
-    // --- 3. 拼接帖子详情页的完整HTML ---
+    // --- 3. 拼接帖子详情页的完整HTML (已修改布局) ---
     contentEl.innerHTML = `
         <div class="post-detail-header">
-            <img src="${authorAvatarUrl}" class="post-author-avatar">
-            <div class="post-author-info">
-                <h1>${post.title}</h1>
-                <div class="post-detail-meta">
-                    <span>作者: ${post.author}</span> | <span>发布于: ${new Date(
-      post.timestamp,
-    ).toLocaleString()}</span>
+            <!-- 1. 标题单独一行 -->
+            <h1 class="post-main-title">${post.title}</h1>
+            
+            <!-- 2. 头像和元数据放在一起 -->
+            <div class="post-user-info-row">
+                <img src="${authorAvatarUrl}" class="post-author-avatar">
+                <div class="post-detail-meta-group">
+                    <span class="post-author-name">${post.author}</span>
+                    <span class="post-publish-time">${new Date(post.timestamp).toLocaleString()}</span>
                 </div>
             </div>
         </div>
+        
         <div class="post-detail-body">${post.content.replace(/\n/g, '<br>')}</div>
+        
         <div class="generate-comments-container">
             <button id="generate-forum-comments-btn">✨ 生成评论</button>
         </div>

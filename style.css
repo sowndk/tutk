@@ -723,7 +723,6 @@ body {
   width: 100%;
 }
 #chat-input {
-    overflow-y: auto;
   flex-grow: 1;
   border: none;
   padding: 10px 15px;
@@ -20073,24 +20072,28 @@ body {
 }
 /* --- ▼▼▼ 【增强版 V2】kk查岗-监控功能样式 ▼▼▼ --- */
 
-/* 1. 左上角的监控图标 (保持不变) */
+/* 修复监控图标：去掉圆圈和悬浮，让它融入顶部栏 */
 #kk-surveillance-icon {
-  position: absolute;
-  top: 60px;
-  left: 50px;
-  z-index: 10;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
+  position: static; /* 取消绝对定位，让它自动排列 */
+  top: auto;
+  left: auto;
+
+  width: auto; /* 大小自动适应 */
+  height: auto;
+
+  border: none; /* 去掉边框 */
+  border-radius: 0; /* 去掉圆角 */
+  background: transparent; /* 背景透明 */
+
+  backdrop-filter: none; /* 去掉毛玻璃模糊 */
+  -webkit-backdrop-filter: none;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  transition: transform 0.2s;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 0 4px; /* 跟其他按钮保持一点距离 */
 }
+
 #kk-surveillance-icon:hover {
   transform: scale(1.1);
 }
@@ -24047,18 +24050,907 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   z-index: 5 !important;
 }
+/* === KK查岗 - 线索分享卡片样式 === */
+.kk-share-card {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); /* 淡黄色背景 */
+  border-radius: 12px;
+  padding: 12px 15px;
+  color: #5d4037; /* 深褐色文字 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ffe082;
+  min-width: 200px;
+  max-width: 260px;
+  position: relative;
+}
 
-/*
+/* 卡片左侧装饰线条 */
+.kk-share-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15px;
+  bottom: 15px;
+  width: 4px;
+  background-color: #ffca28;
+  border-radius: 0 4px 4px 0;
+}
 
-/* PWA Gap Fix: Extend status bar background by 1px to cover rendering artifacts during app switch */
-#status-bar::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
+.kk-share-card .header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px dashed rgba(93, 64, 55, 0.2);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.kk-share-card .header .icon {
+  font-size: 16px;
+}
+
+.kk-share-card .content {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  /* 限制显示行数，防止太长 */
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kk-share-card .footer {
+  font-size: 10px;
+  color: rgba(93, 64, 55, 0.6);
+  text-align: right;
+  font-style: italic;
+}
+/* --- 电脑弹窗层级修复 --- */
+
+/* 1. 最底层：电脑桌面 */
+#kk-computer-modal {
+  z-index: 1001 !important;
+}
+
+/* 2. 中间层：Steam列表、浏览器历史列表、文件查看器 */
+#kk-steam-modal,
+#kk-file-explorer-modal,
+#kk-file-viewer-modal {
+  z-index: 1002 !important;
+}
+
+/* 3. 最顶层：分享确认框 (物品详情) */
+#kk-item-share-modal {
+  z-index: 2000 !important; /* 设得很高，确保压住所有窗口 */
+}
+/* 强制让通用确认框/提示框永远在最顶层 */
+#custom-modal-overlay {
+  z-index: 9999 !important;
+}
+/* 衣帽间整体布局 */
+#wardrobe-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 60px); /* 减去头部高度 */
+  background-color: #f5f5f7;
+  position: relative;
+}
+
+/* 上半部分：展示区 */
+#wardrobe-preview-area {
+  flex: 4; /* 占40%高度 */
+  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); /* 梦幻背景 */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 20px;
+  overflow: visible; /* 允许气泡超出 */
+}
+
+/* 角色立绘/头像 */
+#wardrobe-char-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  object-fit: cover;
+  z-index: 2;
+}
+
+/* AI反应气泡 */
+#wardrobe-reaction-bubble {
+  position: absolute;
+  top: 20px;
+  left: 130px;
+  right: 20px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  border-bottom-left-radius: 2px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  z-index: 3;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 当前搭配槽位 */
+#current-outfit-display {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  z-index: 2;
+}
+
+.outfit-slot {
+  width: 60px;
+  height: 60px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.outfit-slot::after {
+  content: attr(data-placeholder);
+  position: absolute;
+  bottom: 2px;
+  font-size: 10px;
+  color: #666;
+}
+.outfit-slot.filled {
+  background-color: white;
+  border-style: solid;
+  border-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 试穿按钮 */
+#wardrobe-try-on-btn {
+  width: 80%;
+  background: #333;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+#wardrobe-try-on-btn:disabled {
+  background: #ccc;
+  box-shadow: none;
+}
+
+/* 下半部分：库存列表 */
+#wardrobe-inventory-area {
+  flex: 6; /* 占60%高度 */
+  background-color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: -15px; /* 稍微盖住上面一点 */
+  z-index: 1;
+}
+
+.wardrobe-tabs {
+  display: flex;
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+  overflow-x: auto;
+}
+
+.wardrobe-tab {
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  background: #f5f5f7;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.wardrobe-tab.active {
+  background: #333;
+  color: white;
+  font-weight: bold;
+}
+
+.wardrobe-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 15px;
+  align-content: start;
+}
+
+.cloth-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cloth-card:hover {
+  transform: translateY(-2px);
+}
+.cloth-card.selected {
+  border-color: #333;
+  background-color: #fafafa;
+  box-shadow: 0 0 0 2px #333;
+}
+
+.cloth-icon {
+  font-size: 32px;
+  margin-bottom: 5px;
+}
+.cloth-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.2;
+}
+.cloth-desc {
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+  display: none; /* 列表里太挤可以不显示描述 */
+}
+/* --- KK查岗 衣帽间样式修复 --- */
+
+/* 限制左侧预览区的高度，防止撑破屏幕 */
+#wardrobe-preview-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 55vh; /* 限制上半部分高度 */
+  overflow: hidden; /* 防止溢出 */
+}
+
+/* 限制角色立绘的大小，并让它处于底层 */
+#wardrobe-char-avatar {
+  max-height: 160px; /* 限制立绘最大高度 */
+  width: auto;
+  object-fit: contain;
+  z-index: 1; /* 层级较低 */
+  margin-bottom: 10px;
+}
+
+/* 提高气泡的层级，确保在立绘上面 */
+#wardrobe-comment-bubble,
+#wardrobe-reaction-bubble {
+  z-index: 10; /* 层级较高 */
+  position: relative; /* 相对定位 */
+  max-width: 90%;
+  margin-top: -20px; /* 稍微向上偏移，产生重叠感但文字不被挡 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 加深阴影 */
+  border: 1px solid var(--border-color);
+}
+
+/* 优化搭配槽的容器，支持横向滚动以容纳更多分类 */
+#current-outfit-display {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  overflow-x: auto; /* 允许横向滚动 */
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start; /* 左对齐 */
+}
+
+/* 槽位稍微缩小一点，以便放下更多 */
+.outfit-slot {
+  min-width: 50px;
+  height: 50px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+/* --- 修复气泡位置与区分度 --- */
+
+/* 1. 普通看法气泡 (选中衣服时显示) */
+#wardrobe-comment-bubble {
+  position: relative; /* 保持相对定位 */
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #555;
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin: 10px auto 5px auto; /* 上下留空，水平居中 */
+  max-width: 90%;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+/* 2. 试穿反应气泡 (点击穿上后显示) - 重点修改！ */
+#wardrobe-reaction-bubble {
+  /* 使用绝对定位，脱离文档流，彻底解决"偏右"问题 */
+  position: absolute;
+  top: 50%; /* 垂直居中 */
+  left: 50%; /* 水平居中 */
+  transform: translate(-50%, -50%); /* 修正居中偏移 */
+
+  /* 样式区分：粉色主题，代表"心动/反馈" */
+  background-color: #fff0f5; /* 浅粉色背景 */
+  border: 2px solid #ffb7b2; /* 粉色边框 */
+  color: #d63384; /* 深粉色文字 */
+
+  padding: 15px;
+  border-radius: 16px;
+  width: 80%; /* 宽度固定 */
+  z-index: 100; /* 层级最高，盖住立绘和普通气泡 */
+  box-shadow: 0 8px 20px rgba(255, 183, 178, 0.4); /* 粉色光晕阴影 */
+  text-align: center;
+  font-weight: bold;
+
+  /* 加个弹出动画 */
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 弹出动画关键帧 */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -40%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 隐藏反应气泡的小三角，因为它是居中悬浮的，不需要指向某处 */
+#wardrobe-reaction-bubble::after,
+#wardrobe-reaction-bubble::before {
+  display: none;
+}
+
+/* 确保父容器支持绝对定位 */
+#wardrobe-preview-area {
+  position: relative; /* 这一行必须有 */
+  /* ...其他原有样式... */
+}
+/* ================================================================= */
+/* === 🐰 KK查岗 - 终极美化 V2.0 (果冻玻璃·赛博萌系·高级感) === */
+/* ================================================================= */
+
+/* --- 0. 全局通用弹窗美化 (适用于查岗的所有弹窗) --- */
+#kk-computer-modal .modal-content,
+#kk-file-explorer-modal .modal-content,
+#kk-file-viewer-modal .modal-content,
+#kk-steam-modal .modal-content,
+#kk-item-share-modal .modal-content {
+  /* 背景：深色磨砂玻璃，带一点高级的蓝紫色倾向 */
+  background: rgba(30, 35, 45, 0.75) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+
+  /* 边框：细腻的渐变边框，模拟光照 */
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 24px !important;
+
+  /* 阴影：深邃的悬浮阴影 */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  color: #fff !important;
+  overflow: hidden !important;
+}
+
+/* 弹窗头部美化 */
+#kk-computer-modal .modal-header,
+#kk-file-explorer-modal .modal-header,
+#kk-file-viewer-modal .modal-header,
+#kk-steam-modal .modal-header,
+#kk-item-share-modal .modal-header {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.05), transparent) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 15px 20px !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+  color: #fff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 弹窗底部美化 */
+#kk-file-explorer-modal .modal-footer,
+#kk-file-viewer-modal .modal-footer,
+#kk-steam-modal .modal-footer,
+#kk-item-share-modal .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* --- 1. 💻 电脑界面 (赛博桌面风格) --- */
+
+/* 桌面背景 */
+#kk-computer-modal .modal-content {
+  /* 换一个更有科技感的渐变背景 */
+  background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.3) 0px, transparent 50%),
+    linear-gradient(135deg, #111827 0%, #0f172a 100%) !important;
+}
+
+/* 桌面图标布局 */
+#kk-computer-desktop {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* 自动网格 */
+  gap: 20px !important;
+  padding: 30px 20px !important;
+  align-content: start;
+  backdrop-filter: none !important; /* 移除旧的模糊 */
+  background: transparent !important;
+}
+
+/* 单个图标 */
+.kk-desktop-icon {
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kk-desktop-icon:hover {
+  transform: scale(1.1); /* 悬浮放大弹跳 */
+}
+
+/* 图标图片 */
+.kk-desktop-icon img {
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 14px !important;
+  /* 给图标加一点投影和内发光 */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1); /* 图标底板 */
+  backdrop-filter: blur(5px);
+  padding: 8px; /* 图标留白 */
+  box-sizing: border-box;
+  object-fit: contain !important;
+}
+
+/* 图标文字 */
+.kk-desktop-icon span {
+  margin-top: 8px;
+  font-size: 12px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.4); /* 文字背景胶囊 */
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* --- 2. 👗 衣帽间 (梦幻试衣间风格) --- */
+
+#kk-wardrobe-screen {
+  /* 梦幻的极光背景 */
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+}
+#phone-screen.dark-mode #kk-wardrobe-screen {
+  background: #0f0f11;
+}
+
+/* 上半部分展示区 */
+#wardrobe-preview-area {
+  background: none !important; /* 移除旧背景 */
+  /* 新背景：柔和的光晕 */
+  background-image: radial-gradient(circle at 50% 30%, rgba(255, 192, 203, 0.2) 0%, transparent 60%),
+    linear-gradient(to bottom, #fff0f5 0%, #f3e7e9 100%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+#phone-screen.dark-mode #wardrobe-preview-area {
+  background-image: radial-gradient(circle at 50% 30%, rgba(100, 50, 100, 0.3) 0%, transparent 60%),
+    linear-gradient(to bottom, #1a1a1a 0%, #111 100%) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 角色立绘 */
+#wardrobe-char-avatar {
+  width: 60px !important; /* 加大 */
+  height: 60px !important;
+  border: 4px solid #fff !important;
+  box-shadow: 0 8px 20px rgba(255, 182, 193, 0.4) !important;
+  z-index: 2;
+}
+
+/* 气泡美化 */
+#wardrobe-comment-bubble {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 16px !important;
+  color: #555 !important;
+  font-size: 13px !important;
+}
+
+/* 搭配槽位 (圆形果冻) */
+.outfit-slot {
+  width: 55px !important;
+  height: 55px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 2px dashed rgba(0, 0, 0, 0.1) !important;
+  border-radius: 50% !important; /* 变成圆形 */
+  transition: all 0.2s ease;
+}
+.outfit-slot.filled {
+  background: #fff !important;
+  border: 2px solid #ffb7c5 !important; /* 粉色实线 */
+  box-shadow: 0 4px 10px rgba(255, 183, 197, 0.3) !important;
+  transform: scale(1.05);
+}
+.outfit-slot img {
+  border-radius: 50% !important;
+}
+
+/* 下半部分库存区 */
+#wardrobe-inventory-area {
+  background: transparent !important;
+  border-top: none !important;
+  margin-top: 0 !important;
+}
+
+/* 标签页 (Capsule Style) */
+.wardrobe-tabs {
+  background: transparent !important;
+  padding: 10px 15px !important;
+  gap: 10px !important;
+  border-bottom: none !important;
+}
+.wardrobe-tab {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-radius: 20px !important;
+  padding: 6px 16px !important;
+  color: #888 !important;
+  font-size: 13px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s !important;
+}
+.wardrobe-tab.active {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 10px rgba(255, 154, 158, 0.4) !important;
+  border-color: transparent !important;
+  transform: translateY(-2px);
+}
+
+/* 衣服卡片 */
+.cloth-card {
+  background: #fff !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  overflow: hidden;
+}
+.cloth-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+.cloth-card.selected {
+  border: 2px solid #ff9a9e !important;
+  background: #fff5f7 !important;
+}
+.cloth-img {
+  border-radius: 12px !important;
+  background-color: #f9f9f9 !important;
+}
+
+/* ================================================================= */
+/* === 📹 KK查岗 - 监控中心 (布局修复版 V3.0) === */
+/* ================================================================= */
+
+/* 1. 监控卡片：保持大圆角和悬浮感 */
+.kk-monitor-item {
+  position: relative;
+  height: 280px !important; /* 固定高度，保证整齐 */
+  border: none !important;
+  border-radius: 20px !important;
+  background-color: #1a1a1a !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden; /* 关键：防止内容溢出圆角 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* 让内容靠底对齐 */
+  transition: transform 0.2s ease;
+}
+.kk-monitor-item:hover {
+  transform: scale(1.02);
+}
+
+/* 2. 底部黑色渐变面板 (包含文字和按钮) */
+.frosted-glass-panel {
+  position: relative !important; /* 恢复为相对定位 */
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 30px 15px 15px 15px !important; /* 顶部留出空间给渐变过渡 */
+
+  /* 核心：黑色渐变背景，保证文字清晰 */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 20%, rgba(0, 0, 0, 0.6) 80%, transparent 100%) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important; /* 文字和按钮的间距 */
+  z-index: 2;
+}
+
+/* 3. 监控描述文字 (修复：可滚动，不被截断) */
+.monitor-content-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  margin: 0 !important;
+
+  /* 核心修复：限制高度，超出滚动 */
+  max-height: 80px !important;
+  overflow-y: auto !important;
+  padding-right: 5px; /* 给滚动条留点位置 */
+}
+
+/* 4. 互动按钮容器 (修复：固定在底部，不被遮挡) */
+.monitor-interaction-controls {
+  position: static !important; /* 取消绝对定位，让它自然排在文字下方 */
+  display: flex !important;
+  justify-content: flex-end; /* 按钮靠右对齐 */
+  gap: 12px !important;
+  margin: 0 !important;
+  padding-top: 5px !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* 5. 互动按钮样式 (玻璃圆钮) */
+.monitor-btn {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  font-size: 16px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.monitor-btn:hover {
+  background: white !important;
+  color: #333 !important;
+  transform: scale(1.1);
+}
+
+/* 6. 头部信息胶囊 (左上角) */
+.kk-monitor-item .monitor-header {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 4px 10px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-shadow: none !important;
+}
+
+/* 7. LIVE 角标 (右上角，仅当角色在时显示) */
+.kk-monitor-item.active-character-location {
+  border: 2px solid rgba(255, 255, 255, 0.3) !important; /* 给当前房间加个亮边框 */
+}
+.kk-monitor-item.active-character-location::after {
+  content: 'LIVE';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 4px;
+  z-index: 5;
+  box-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+  letter-spacing: 1px;
+}
+/* ================================================================= */
+/* === 📱 手机端监控按钮 - 强制防溢出修复补丁 === */
+/* ================================================================= */
+
+/* 强制所有盒模型为内减模式，防止padding撑大宽度 */
+.frosted-glass-panel,
+.monitor-interaction-controls {
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+/* 针对手机屏幕 (宽度小于 768px) 的特殊调整 */
+@media screen and (max-width: 768px) {
+  /* 1. 调整底部面板的内边距 */
+  .frosted-glass-panel {
+    padding-left: 12px !important;
+    padding-right: 12px !important; /* 左右留出空隙 */
+    padding-bottom: 12px !important;
+  }
+
+  /* 2. 按钮容器调整 */
+  .monitor-interaction-controls {
+    justify-content: flex-end !important; /* 依然靠右 */
+    gap: 8px !important; /* 缩小按钮之间的间距，防止太宽 */
+    padding-right: 5px !important; /* 右侧额外留一点点安全距离 */
+    flex-wrap: nowrap !important; /* 禁止换行 */
+  }
+
+  /* 3. 稍微缩小按钮尺寸，确保能放下三个 */
+  .monitor-btn {
+    width: 34px !important; /* 原来是38，改小一点 */
+    height: 34px !important;
+    min-width: 34px !important; /* 防止被挤扁 */
+    font-size: 14px !important; /* 图标也稍微小一点 */
+  }
+}
+
+/* --- 4. 📂 文件/游戏列表 (清透列表) --- */
+
+/* Steam 游戏列表项 */
+#kk-steam-games-list .character-data-item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  margin-bottom: 10px !important;
+  padding: 12px 15px !important;
+  color: #fff !important;
+}
+#kk-steam-games-list .character-data-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateX(5px);
+}
+#kk-steam-games-list .title {
+  color: #66c0f4 !important; /* Steam蓝 */
+  font-size: 16px !important;
+}
+
+/* 浏览器/文件列表项 */
+.kk-file-item,
+.kk-history-item {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ddd !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.2s;
+}
+.kk-file-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
+
+/* 物品分享弹窗内容区 */
+#kk-item-share-content {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+}
+/* ========================================= */
+/* === ✨ 圈子详情页重构 V4 (标题独立版) ✨ === */
+/* ========================================= */
+
+/* 1. 头部容器：垂直排列，先标题，后用户信息 */
+.post-detail-header {
+    display: flex !important;
+    flex-direction: column !important; /* 垂直排列 */
+    gap: 15px !important; /* 标题和用户信息之间的间距 */
+    align-items: flex-start !important; /* 左对齐 */
+    
+    background-color: #fff !important;
+    padding: 25px 20px 15px 20px !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+/* 2. 标题样式：大号、加粗、黑色 */
+.post-main-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: #1f1f1f !important;
+    line-height: 1.4 !important;
+    margin: 0 !important; /* 移除默认边距 */
+}
+
+/* 3. 用户信息行容器：横向排列 (头像 + 信息) */
+.post-user-info-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important; /* 头像和文字的间距 */
     width: 100%;
-    height: 1px;
-    background: inherit; /* Inherits the dynamic color set by JS */
-    pointer-events: none;
-    z-index: 1000;
+}
+
+/* 4. 头像样式 */
+.post-author-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* 5. 信息组 (昵称 + 时间) 垂直排列 */
+.post-detail-meta-group {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 2px !important;
+}
+
+/* 6. 作者昵称样式 */
+.post-author-name {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+/* 7. 发布时间样式 */
+.post-publish-time {
+    font-size: 12px !important;
+    color: #999 !important;
+}
+
+/* --- 夜间模式适配 --- */
+#phone-screen.dark-mode .post-detail-header {
+    background-color: #1c1c1e !important;
+    border-bottom-color: #333 !important;
+}
+#phone-screen.dark-mode .post-main-title {
+    color: #eee !important;
+}
+#phone-screen.dark-mode .post-author-name {
+    color: #ddd !important;
+}
+#phone-screen.dark-mode .post-publish-time {
+    color: #777 !important;
 }
