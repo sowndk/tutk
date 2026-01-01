@@ -23538,7 +23538,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                       if (isViewingThisChat) appendMessage(errBubble, chat);
                     } finally {
                       if (chatHeaderTitle) {
-                        chatHeaderTitle.textContent = chat.name;
+                        chatHeaderTitle.textContent = (!chat.isGroup && chat.settings.remarkName ? chat.settings.remarkName : chat.name);
                         chatHeaderTitle.classList.remove("typing-status");
                       }
                     }
@@ -23775,7 +23775,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
                 if (typingIndicator) typingIndicator.style.display = "none";
               } else {
                 if (chatHeaderTitle && state.chats[chatId]) {
-                  chatHeaderTitle.textContent = state.chats[chatId].name;
+                  chatHeaderTitle.textContent = (!state.chats[chatId].isGroup && state.chats[chatId].settings.remarkName ? state.chats[chatId].settings.remarkName : state.chats[chatId].name);
                   chatHeaderTitle.classList.remove("typing-status");
                 }
               }
@@ -28731,7 +28731,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
               if (chatHeaderTitle && state.chats[chatId]) {
                 chatHeaderTitle.style.opacity = 0;
                 setTimeout(() => {
-                  chatHeaderTitle.textContent = state.chats[chatId].name;
+                  chatHeaderTitle.textContent = (!state.chats[chatId].isGroup && state.chats[chatId].settings.remarkName ? state.chats[chatId].settings.remarkName : state.chats[chatId].name);
                   chatHeaderTitle.classList.remove("typing-status");
                   chatHeaderTitle.style.opacity = 1;
                 }, 200);
