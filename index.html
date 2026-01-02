@@ -2521,11 +2521,6 @@
               <span class="panel-btn" id="upload-sticker-btn">上传</span>
             </div>
           </div>
-          <!-- 搜索框开始 -->
-<div style="padding: 5px 10px;">
- <input type="text" id="sticker-search-input" placeholder="搜表情..." oninput="renderStickerPanel()" style="width: 80px; margin-left: 5px; border: 1px solid #ccc; border-radius: 4px;">
-</div>
-<!-- 搜索框结束 -->
           <div id="sticker-grid"></div>
 
           <!-- 在 #sticker-panel 中，找到 id="sticker-panel-footer" -->
@@ -21662,12 +21657,6 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             );
           }
 
-/* 搜索过滤逻辑开始 */
-const searchKw = document.getElementById("sticker-search-input") ? document.getElementById("sticker-search-input").value.toLowerCase().trim() : "";
-if (searchKw) {
-    stickersToRender = stickersToRender.filter(s => s.name && s.name.toLowerCase().includes(searchKw));
-}
-/* 搜索过滤逻辑结束 */
           if (stickersToRender.length === 0) {
             // 根据当前选中的分类，显示不同的提示语
             let message;
