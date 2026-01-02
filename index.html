@@ -21665,7 +21665,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
 /* 搜索过滤逻辑开始 */
 const searchKw = document.getElementById("sticker-search-input") ? document.getElementById("sticker-search-input").value.toLowerCase().trim() : "";
 if (searchKw) {
-    stickersToRender = stickersToRender.filter(s => s.name.toLowerCase().includes(searchKw));
+    stickersToRender = stickersToRender.filter(s => s.name && s.name.toLowerCase().includes(searchKw));
 }
 /* 搜索过滤逻辑结束 */
           if (stickersToRender.length === 0) {
