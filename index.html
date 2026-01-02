@@ -2516,16 +2516,6 @@
                 id="done-user-stickers-btn"
                 style="display: none"
                 >完成</span
-                <!-- ▼▼▼ 全选按钮（默认隐藏） ▼▼▼ -->
-<span 
-    id="custom-select-all-btn" 
-    class="panel-btn" 
-    onclick="customSelectAllStickers()" 
-    style="display: none; margin-left: 10px; color: var(--primary-color);"
-
-    全选
-</span>
-<!-- ▲▲▲ 添加结束 ▲▲▲ -->
               >
               <span class="panel-btn" id="add-sticker-btn">添加</span>
               <span class="panel-btn" id="upload-sticker-btn">上传</span>
@@ -21672,7 +21662,7 @@ lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer
             );
           }
 
-          /* 搜索过滤逻辑开始 */
+/* 搜索过滤逻辑开始 */
 const searchKw = document.getElementById("sticker-search-input") ? document.getElementById("sticker-search-input").value.toLowerCase().trim() : "";
 if (searchKw) {
     stickersToRender = stickersToRender.filter(s => s.name.toLowerCase().includes(searchKw));
@@ -61707,82 +61697,8 @@ if (searchKw) {
     <input type="file" id="ludo-qbank-import-input" accept=".json" hidden />
     <input type="file" id="inner-voice-bg-input" accept="image/*" hidden />
     <input type="file" id="script-kill-import-input" accept=".json" hidden />
-  
-  <!-- ▼▼▼ 表情包全选与滑动选择增强脚本 ▼▼▼ -->
-<script>
-// 1. 全选功能逻辑
-function customSelectAllStickers() {
-    const grid = document.getElementById("sticker-grid");
-    if (!grid) return;
-    const items = grid.getElementsByClassName("sticker-item");
-    // 检查是否已经全选
-    const allSelected = Array.from(items).every(item => 
-        item.querySelector(".sticker-image").classList.contains("selected")
-    );
-    // 执行点击
-    Array.from(items).forEach(item => {
-        const isSelected = item.querySelector(".sticker-image").classList.contains("selected");
-        if (allSelected) {
-            if (isSelected) item.click(); // 全选状态下 -> 全不选
-        } else {
-            if (!isSelected) item.click(); // 未全选 -> 全选
-        }
-    });
-}
+  </body>
+</html>
 
-// 2. 自动显示/隐藏全选按钮
-setTimeout(() => {
-    if (typeof toggleUserStickerSelectionMode === 'function') {
-        // 劫持原有的切换函数
-        const originalToggle = toggleUserStickerSelectionMode;
-        toggleUserStickerSelectionMode = function() {
-            originalToggle(); // 先执行原有的
-            
-            // 然后同步全选按钮的状态
-            setTimeout(() => {
-                const doneBtn = document.getElementById("done-user-stickers-btn");
-                const selectAllBtn = document.getElementById("custom-select-all-btn");
-                if (doneBtn && selectAllBtn) {
-                    // 跟着“完成”按钮一起显示或隐藏
-                    selectAllBtn.style.display = doneBtn.style.display === "none" ? "none" : "inline-block";
-                }
-            }, 50);
-        };
-    }
-}, 1000);
-
-// 3. 滑动选择功能
-(function initSlideSelect() {
-    const grid = document.getElementById("sticker-grid");
-    if (!grid) return;
-    
-    let lastTouchedItem = null;
-
-    grid.addEventListener('touchmove', function(e) {
-        // 只有在选择模式下才生效
-        if (typeof isUserStickerSelectionMode === 'undefined' || !isUserStickerSelectionMode) return;
-        
-        // 阻止默认滚动
-        if (e.cancelable) e.preventDefault();
-
-        const touch = e.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const item = target ? target.closest('.sticker-item') : null;
-
-        // 如果手指滑到了一个新的未选中的表情上
-        if (item && item !== lastTouchedItem) {
-            lastTouchedItem = item;
-            const img = item.querySelector(".sticker-image");
-            // 只做“选中”操作，不做“取消”，体验更好
-            if (img && !img.classList.contains("selected")) {
-                item.click();
-            }
-        }
-    }, { passive: false });
-
-    grid.addEventListener('touchend', () => { lastTouchedItem = null; });
-})();
-</script>
-  
   <script src="dynamic-statusbar.js"></script></body>
 </html>
